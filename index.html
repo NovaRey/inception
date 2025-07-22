@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Military Intelligence Analysis App</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #00ffcc;
+            font-family: 'Arial', sans-serif;
+            overflow-x: hidden;
+            transition: all 0.3s ease;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            border: 2px solid #00ffcc;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.5);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 20px rgba(0, 255, 204, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(0, 255, 204, 0.7); }
+            100% { box-shadow: 0 0 20px rgba(0, 255, 204, 0.5); }
+        }
+        .header {
+            text-align: center;
+            font-size: 2.5em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px #00ffcc;
+        }
+        .input-section {
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+        }
+        .input-section label {
+            font-size: 1.2em;
+            margin-right: 10px;
+        }
+        .input-section input {
+            padding: 8px;
+            font-size: 1em;
+            background: #1a1a3d;
+            border: 1px solid #00ffcc;
+            color: #00ffcc;
+            border-radius: 5px;
+            transition: border-color 0.3s;
+        }
+        .input-section input:focus {
+            border-color: #00b389;
+            outline: none;
+        }
+        .font-select {
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+        }
+        .font-select label {
+            margin-right: 10px;
+        }
+        .font-select select {
+            padding: 8px;
+            background: #1a1a3d;
+            color: #00ffcc;
+            border: 1px solid #00ffcc;
+            border-radius: 5px;
+            transition: border-color 0.3s;
+        }
+        .font-select select:focus {
+            border-color: #00b389;
+            outline: none;
+        }
+        .button {
+            padding: 10px 20px;
+            background: #00ffcc;
+            color: #0f0c29;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.3s;
+        }
+        .button:hover {
+            background: #00b389;
+        }
+        .report-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(26, 26, 61, 0.8);
+            border-radius: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .report-section ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .report-section li {
+            margin: 10px 0;
+            cursor: pointer;
+            padding: 5px;
+            border: 1px solid #00ffcc;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .report-section li:hover {
+            background: rgba(0, 191, 137, 0.3);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 12, 41, 0.9);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: #1a1a3d;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #00ffcc;
+            width: 80%;
+            max-height: 80vh;
+            overflow-y: auto;
+            color: #00ffcc;
+        }
+        .close-modal {
+            float: right;
+            cursor: pointer;
+            font-size: 1.5em;
+            color: #ff4444;
+        }
+        .download-links {
+            margin-top: 20px;
+        }
+        .download-links a {
+            color: #00ffcc;
+            text-decoration: underline;
+            margin-right: 15px;
+            transition: color 0.3s;
+        }
+        .download-links a:hover {
+            color: #00b389;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">Military Intelligence Analysis</div>
+        <div class="input-section">
+            <label for="location">Enter Location (Country, City, or Code):</label>
+            <input type="text" id="location" placeholder="e.g., USA, New York, US">
+        </div>
+        <div class="font-select">
+            <label for="font">Select Font:</label>
+            <select id="font">
+                <option value="Arial">Arial</option>
+                <option value="Helvetica">Helvetica</option>
+                <option value="Verdana">Verdana</option>
+            </select>
+        </div>
+        <button class="button" onclick="generateReport()">Generate Report</button>
+        <div class="report-section" id="reportOutput"></div>
+        <div class="download-links" id="downloadLinks"></div>
+    </div>
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <script>
+        let trackLog = [];
+
+        function generateReport() {
+            const location = document.getElementById('location').value.trim();
+            const font = document.getElementById('font').value;
+            const reportOutput = document.getElementById('reportOutput');
+            const downloadLinks = document.getElementById('downloadLinks');
+
+            if (!location) {
+                reportOutput.innerHTML = '<p style="color: #ff4444;">Please enter a valid location.</p>';
+                return;
+            }
+
+            document.body.style.fontFamily = font;
+
+            const mockData = collectMockData(location);
+            const ipbReport = generateIPBReport(mockData);
+            const slideContent = generatePowerPointSlides(ipbReport);
+
+            reportOutput.innerHTML = `
+                <h2>IPB Report for ${location}</h2>
+                <p><strong>PMESII-PT Analysis:</strong></p>
+                <ul id="pmesiiPtList">
+                    ${Object.entries(ipbReport.pmesiiPt).map(([key, value]) => `<li data-category="${key}" onclick="showModal('${key}', 'pmesiiPt', '${location}')"><strong>${key}:</strong> ${value.substring(0, 50)}...</li>`).join('')}
+                </ul>
+                <p><strong>ASCOPE Analysis:</strong></p>
+                <ul id="ascopeList">
+                    ${Object.entries(ipbReport.ascope).map(([key, value]) => `<li data-category="${key}" onclick="showModal('${key}', 'ascope', '${location}')"><strong>${key}:</strong> ${value.substring(0, 50)}...</li>`).join('')}
+                </ul>
+            `;
+
+            downloadLinks.innerHTML = `
+                <a href="#" onclick="downloadReport('${location}', 'ipb', 'txt')">Download IPB Report (Text)</a>
+                <a href="#" onclick="downloadSlides('${location}', 'ppt')">Download Slides (Mock)</a>
+            `;
+
+            trackLog.push({ input: location, timestamp: new Date().toLocaleString(), action: 'Report Generated' });
+        }
+
+        function collectMockData(location) {
+            return {
+                political: `The political structure of ${location} is governed by a central government with multiple political parties competing for power. Recent elections, held on July 15, 2025, have shifted the balance toward a coalition government. Local governance includes mayors and councils that manage urban policies. International relations are strong, with alliances influencing defense strategies.`,
+                military: `The military presence in ${location} includes several active bases and specialized units trained for rapid deployment. These units conduct regular patrols and joint exercises with allied forces. The defense budget supports advanced technology and personnel training. Recent conflicts have prompted an increase in military readiness as of mid-2025.`,
+                economic: `The economy of ${location} relies heavily on technology and agriculture as key industries. Tech hubs drive innovation, while rural areas export crops globally. Unemployment rates have stabilized but vary by region. Economic policies are focused on sustainable growth, with investments in renewable energy projects.`,
+                social: `Social factors in ${location} include a diverse mix of urban and rural populations with distinct cultural identities. Community organizations promote education and health initiatives. Social media plays a significant role in shaping public opinion. Tensions occasionally arise due to economic disparities between regions.`,
+                infrastructure: `Key infrastructure in ${location} includes a network of highways connecting major cities and ports facilitating trade. Public transportation systems are being upgraded with modern rail lines. Power grids are reliable but vulnerable to natural disasters. Emergency repair teams are stationed to address potential outages.`,
+                information: `Information flow in ${location} is managed through local media outlets and a robust internet infrastructure. Government censorship is minimal, allowing free press with some regulations. Social media platforms are widely used for real-time updates. Intelligence gathering relies on both digital and human sources as of July 2025.`,
+                physicalEnvironment: `The terrain of ${location} varies from rugged mountains to expansive plains, impacting military mobility. Climate changes have led to increased flooding in low-lying areas. Wildlife conservation efforts are active in protected zones. Seasonal weather patterns influence operational planning.`,
+                areas: `Key areas in ${location} include bustling urban centers and strategic border regions. These areas are critical for trade and defense operations. Rural zones provide resources but lack modern amenities. Mapping efforts are ongoing to update these regions’ details.`,
+                structures: `Structures in ${location} include government buildings that serve as administrative hubs and hospitals equipped for emergencies. Schools and cultural centers are widespread in urban areas. Military outposts are strategically placed near borders. Maintenance of these structures is a priority to ensure functionality.`,
+                capabilities: `Capabilities in ${location} include well-trained emergency response teams ready for disaster relief. Local law enforcement collaborates with military units during crises. Technological tools enhance communication and surveillance. Training programs are regularly updated to address new threats.`,
+                organizations: `Organizations in ${location} include numerous NGOs providing humanitarian aid and military units overseeing security. International bodies offer support during conflicts. Local businesses collaborate on infrastructure projects. Coordination between these groups is essential for effective governance.`,
+                people: `The population of ${location} consists of civilians engaged in various trades and military personnel stationed across the region. Cultural festivals strengthen community bonds. Education levels vary, with urban areas showing higher literacy rates. Migration patterns are influenced by economic opportunities.`,
+                events: `Recent events in ${location} include local elections on July 15, 2025, shaping the political landscape. Natural disasters earlier this year prompted relief efforts. Cultural festivals are planned for late 2025. Security drills are scheduled to enhance preparedness.`
+            };
+        }
+
+        function generateIPBReport(data) {
+            return {
+                pmesiiPt: {
+                    Political: data.political,
+                    Military: data.military,
+                    Economic: data.economic,
+                    Social: data.social,
+                    Infrastructure: data.infrastructure,
+                    Information: data.information,
+                    PhysicalEnvironment: data.physicalEnvironment
+                },
+                ascope: {
+                    Areas: data.areas,
+                    Structures: data.structures,
+                    Capabilities: data.capabilities,
+                    Organizations: data.organizations,
+                    People: data.people,
+                    Events: data.events
+                }
+            };
+        }
+
+        function generatePowerPointSlides(report) {
+            let slides = [];
+            slides.push(`<h3>Slide 1: Overview</h3><p>IPB Report for ${report.pmesiiPt.Political.match(/of (.*?)\s/)[1]}</p>`);
+            for (let [category, description] of Object.entries(report.pmesiiPt)) {
+                slides.push(`<h3>Slide ${slides.length + 1}: ${category}</h3><p>${description}</p>`);
+            }
+            for (let [category, description] of Object.entries(report.ascope)) {
+                slides.push(`<h3>Slide ${slides.length + 1}: ${category}</h3><p>${description}</p>`);
+            }
+            return slides.join('<br>');
+        }
+
+        function downloadReport(location, type, format) {
+            const report = generateIPBReport(collectMockData(location));
+            let content = `IPB Report for ${location}\n\nPMESII-PT:\n${Object.entries(report.pmesiiPt).map(([k, v]) => `${k}: ${v}`).join('\n')}\n\nASCOPE:\n${Object.entries(report.ascope).map(([k, v]) => `${k}: ${v}`).join('\n')}`;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${location}_${type}.${format}`;
+            a.click();
+            URL.revokeObjectURL(url);
+            trackLog.push({ input: location, output: content.substring(0, 100) + '...', timestamp: new Date().toLocaleString(), action: 'Report Downloaded' });
+        }
+
+        function downloadSlides(location, format) {
+            const slides = generatePowerPointSlides(generateIPBReport(collectMockData(location)));
+            const blob = new Blob([slides], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${location}_slides.${format}`;
+            a.click();
+            URL.revokeObjectURL(url);
+            trackLog.push({ input: location, output: slides.substring(0, 100) + '...', timestamp: new Date().toLocaleString(), action: 'Slides Downloaded' });
+        }
+
+        function showModal(category, section, location) {
+            const modal = document.getElementById('modal');
+            const modalContent = document.getElementById('modalContent');
+            const report = generateIPBReport(collectMockData(location));
+            const details = section === 'pmesiiPt' ? report.pmesiiPt[category] : report.ascope[category];
+            const inputData = collectMockData(location)[category.toLowerCase()];
+            modalContent.innerHTML = `
+                <h3>${category} Details</h3>
+                <p>${details}</p>
+                <h4>Input Data:</h4>
+                <pre>${inputData}</pre>
+                <h4>Tracking Info:</h4>
+                <ul>
+                    ${trackLog.filter(log => log.input === location && log.action.includes('Generated')).map(log => `<li>${log.timestamp} - ${log.action}</li>`).join('')}
+                </ul>
+            `;
+            modal.style.display = 'flex';
+            trackLog.push({ input: location, output: details.substring(0, 100) + '...', timestamp: new Date().toLocaleString(), action: `${category} Amplified` });
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('modal');
+            modal.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
